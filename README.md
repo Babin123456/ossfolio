@@ -38,6 +38,19 @@ Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing.
 ## Contributors
 
 <!-- ALL-CONTRIBUTORS-LIST:START -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://prodhosh.me/"><img src="https://avatars.githubusercontent.com/u/213995806?v=4?s=100" width="100px;" alt="PRODHOSH V.S"/><br /><sub><b>PRODHOSH V.S</b></sub></a><br /><a href="https://github.com/PRODHOSH/ossfolio/commits?author=PRODHOSH" title="Code">💻</a> <a href="https://github.com/PRODHOSH/ossfolio/commits?author=PRODHOSH" title="Documentation">📖</a> <a href="#design-PRODHOSH" title="Design">🎨</a> <a href="https://github.com/PRODHOSH/ossfolio/issues?q=author%3APRODHOSH" title="Bug reports">🐛</a> <a href="https://github.com/PRODHOSH/ossfolio/pulls?q=is%3Apr+reviewed-by%3APRODHOSH" title="Reviewed Pull Requests">👀</a> <a href="#ideas-PRODHOSH" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-PRODHOSH" title="Maintenance">🚧</a> <a href="https://github.com/PRODHOSH/ossfolio/commits?author=PRODHOSH" title="Tests">⚠️</a> <a href="#infra-PRODHOSH" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## License
