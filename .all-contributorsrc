@@ -1,0 +1,23 @@
+{
+  "projectName": "ossfolio",
+  "projectOwner": "your-github-username",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": ["README.md"],
+  "imageSize": 100,
+  "commit": true,
+  "commitConvention": "angular",
+  "contributors": [],
+  "contributionTypes": [
+    "code",
+    "doc",
+    "design",
+    "bug",
+    "review",
+    "ideas",
+    "maintenance",
+    "test",
+    "translation",
+    "infra"
+  ]
+}

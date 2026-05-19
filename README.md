@@ -35,6 +35,11 @@ OSSfolio is fully open source and built by contributors. Browse [good first issu
 
 Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing.
 
+## Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
 ## License
 
 [MIT](LICENSE)
