@@ -22,16 +22,20 @@ jobs:
             const pr = context.payload.pull_request;
             const author = pr.user.login;
 
+            const body = [
+              `🎉 Your PR just got merged, @${author} — thank you for contributing to OSSfolio!`,
+              ``,
+              `Your work is now part of the project. Here's what to do next:`,
+              `- ⭐ If you haven't already, consider giving the repo a star — it helps us grow.`,
+              `- 📢 Share your contribution on LinkedIn, Twitter, or wherever you hang out. You shipped open source!`,
+              `- 🔍 Browse other [open issues](../issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) if you want to keep contributing.`,
+              ``,
+              `We really appreciate you taking the time. See you in the next PR! 🚀`,
+            ].join('\n');
+
             await github.rest.issues.createComment({
               owner,
               repo,
               issue_number: pr.number,
-              body: `🎉 Your PR just got merged, @${author} — thank you for contributing to OSSfolio!
-
-Your work is now part of the project. Here's what to do next:
-- ⭐ If you haven't already, consider giving the repo a star — it helps us grow.
-- 📢 Share your contribution on LinkedIn, Twitter, or wherever you hang out. You shipped open source!
-- 🔍 Browse other [open issues](../issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) if you want to keep contributing.
-
-We really appreciate you taking the time. See you in the next PR! 🚀`,
+              body,
             });
