@@ -154,10 +154,10 @@ export function ProfileView({
 
           <div style={{ display: "flex", gap: "20px", marginTop: "14px" }}>
             <span style={{ fontSize: "13px", color: "#707070" }}>
-              <strong style={{ color: "#171717", fontWeight: 600 }}>{user.followers.toLocaleString()}</strong> followers
+              <strong style={{ color: "#171717", fontWeight: 600 }}>{user.followers.toLocaleString("en-US")}</strong> followers
             </span>
             <span style={{ fontSize: "13px", color: "#707070" }}>
-              <strong style={{ color: "#171717", fontWeight: 600 }}>{user.following.toLocaleString()}</strong> following
+              <strong style={{ color: "#171717", fontWeight: 600 }}>{user.following.toLocaleString("en-US")}</strong> following
             </span>
             <span style={{ fontSize: "13px", color: "#707070" }}>
               <strong style={{ color: "#171717", fontWeight: 600 }}>{user.public_repos}</strong> repos
@@ -216,14 +216,14 @@ export function ProfileView({
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                     </svg>
-                    {repo.stargazers_count.toLocaleString()}
+                    {repo.stargazers_count.toLocaleString("en-US")}
                   </span>
                   <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "#707070" }}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <circle cx="12" cy="18" r="3" /><circle cx="6" cy="6" r="3" /><circle cx="18" cy="6" r="3" />
                       <path d="M18 9a9 9 0 0 1-9 9M6 9a9 9 0 0 0 9 9" />
                     </svg>
-                    {repo.forks_count.toLocaleString()}
+                    {repo.forks_count.toLocaleString("en-US")}
                   </span>
                 </div>
               </a>
@@ -275,7 +275,7 @@ export function ProfileView({
               }}
             >
               <span style={{ fontSize: "24px", fontWeight: 700, color: "#171717", letterSpacing: "-0.5px" }}>
-                {item.value.toLocaleString()}
+                {item.value.toLocaleString("en-US")}
               </span>
               <span style={{ fontSize: "12px", color: "#707070", marginTop: "4px" }}>{item.label}</span>
             </div>
