@@ -84,7 +84,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           techStack={techStack}
           orgs={orgs}
           heatmap={heatmap}
-          totalContributions={totalContributions}
           score={score}
         />
       </main>

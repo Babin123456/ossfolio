@@ -53,7 +53,6 @@ interface ProfileExtras {
   techStack: TechEntry[];
   orgs: Org[];
   heatmap: HeatmapWeek[];
-  totalContributions: number;
   score: number;
 }
 
@@ -64,7 +63,6 @@ export function ProfileView({
   techStack,
   orgs,
   heatmap,
-  totalContributions,
   score,
 }: { user: GitHubUser; repos: GitHubRepo[] } & ProfileExtras) {
   const displayName = user.name || user.login;
@@ -344,7 +342,7 @@ export function ProfileView({
       {heatmap.length > 0 && (
         <div style={{ marginTop: "44px" }}>
           <h2 style={{ fontSize: "16px", fontWeight: 600, color: "#171717", margin: "0 0 16px 0", letterSpacing: "-0.2px" }}>
-            {totalContributions.toLocaleString()} contributions in the last year
+            Contribution activity
           </h2>
           <div
             style={{
