@@ -11,6 +11,7 @@ import {
 } from "@/lib/profile-data";
 import { generateMockHeatmap } from "@/lib/mock";
 import { calculateScore } from "@/lib/score";
+import { supabase } from "@/lib/supabase";
 
 export const runtime = "edge";
 
@@ -71,7 +72,24 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const { weeks: heatmap, totalContributions } = generateMockHeatmap(username);
 
   const stats = { ...liveStats, totalContributions };
-  const score = calculateScore(stats, mappedRepos);
+  const liveScore = calculateScore(stats, mappedRepos);
+
+  // DB-first: prefer the stored (synced) score so every visitor — including
+  // signed-out ones — sees the same official number that feeds the leaderboard.
+  // Falls back to the live-computed score if this user hasn't synced a row yet.
+  let score = liveScore;
+  try {
+    const { data: profileRow } = await supabase
+      .from("profiles")
+      .select("score")
+      .eq("username", username)
+      .maybeSingle();
+    if (profileRow && typeof profileRow.score === "number") {
+      score = profileRow.score;
+    }
+  } catch {
+    // Ignore and use the live score — a Supabase hiccup must not break the page.
+  }
 
   return (
     <>

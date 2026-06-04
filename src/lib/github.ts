@@ -1,3 +1,5 @@
+import type { ContributorStats, Repo } from "@/types";
+
 const GITHUB_GRAPHQL_URL = "https://api.github.com/graphql";
 
 async function githubGraphQL<T>(
@@ -131,4 +133,34 @@ export async function fetchContributorProfile(
     token
   );
   return data.user;
+}
+
+/**
+ * Convert a GraphQL `GitHubContributor` into the `{ stats, repos }` inputs that
+ * `calculateScore` expects. Unlike the unauthenticated REST pipeline, the
+ * authenticated GraphQL `contributionsCollection` exposes review counts, so the
+ * resulting score reflects every signal in the formula (commits, PRs, issues,
+ * reviews, stars). Pure and side-effect free so it can be unit-tested directly.
+ */
+export function contributorToScoreInputs(
+  c: GitHubContributor
+): { stats: ContributorStats; repos: Repo[] } {
+  const cc = c.contributionsCollection;
+  const stats: ContributorStats = {
+    totalCommits: cc.totalCommitContributions,
+    totalPRs: cc.totalPullRequestContributions,
+    totalIssues: cc.totalIssueContributions,
+    totalReviews: cc.totalPullRequestReviewContributions,
+    totalContributions: cc.contributionCalendar.totalContributions,
+  };
+  const repos: Repo[] = c.repositories.nodes.map((n) => ({
+    name: n.name,
+    description: n.description,
+    stars: n.stargazerCount,
+    forks: n.forkCount,
+    language: n.primaryLanguage?.name ?? null,
+    languageColor: n.primaryLanguage?.color ?? null,
+    url: n.url,
+  }));
+  return { stats, repos };
 }

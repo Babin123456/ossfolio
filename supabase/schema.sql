@@ -14,6 +14,11 @@ create table public.profiles (
   name       text,
   avatar_url text,
   github_url text,
+  score          integer not null default 0,
+  total_commits  integer not null default 0,
+  total_prs      integer not null default 0,
+  total_issues   integer not null default 0,
+  total_reviews  integer not null default 0,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
