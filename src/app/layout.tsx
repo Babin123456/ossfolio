@@ -10,19 +10,29 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://ossfolio.qzz.io"),
+
   title: "OSSfolio — Your Open Source Identity",
   description:
     "A public profile platform for open-source contributors. Showcase your merged PRs, contribution streaks, orgs, and more at ossfolio.me/username.",
+
   icons: {
     icon: "/logo.png",
     shortcut: "/logo.png",
     apple: "/logo.png",
   },
-  openGraph: {
+
+openGraph: {
+  title: "OSSfolio — Your Open Source Identity",
+  description: "Your open-source identity, beyond GitHub.",
+  type: "website",
+},
+
+  twitter: {
+    card: "summary_large_image",
     title: "OSSfolio — Your Open Source Identity",
     description: "Your open-source identity, beyond GitHub.",
-    type: "website",
-    images: ["/logo.png"],
+    images: ["/og-image.png"],
   },
 };
 
