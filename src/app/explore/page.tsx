@@ -46,6 +46,7 @@ async function fetchPage(
       )
       .order("score", { ascending: false })
       .order("updated_at", { ascending: false })
+      .order("username", { ascending: true })
       .range(from, to);
     if (error || !Array.isArray(data)) return { rows: [], hasNext: false };
     const hasNext = data.length > PAGE_SIZE;
@@ -144,7 +145,12 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
               {rows.map((row, index) => {
                 const rank = rankOffset + index + 1;
                 const displayName = row.name || row.username;
-                const avatar = row.avatar_url || `https://github.com/${row.username}.png`;
+                const avatar =
+                  row.avatar_url &&
+                  (row.avatar_url.startsWith("https://avatars.githubusercontent.com/") ||
+                    row.avatar_url.startsWith("https://github.com/"))
+                    ? row.avatar_url
+                    : `https://github.com/${encodeURIComponent(row.username)}.png`;
                 const score = typeof row.score === "number" ? row.score : 0;
                 const prs = row.total_prs || 0;
                 const issues = row.total_issues || 0;
@@ -154,7 +160,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                 return (
                   <li key={row.username}>
                     <Link
-                      href={`/${row.username}`}
+                      href={`/${encodeURIComponent(row.username)}`}
                       style={{
                         display: "flex",
                         alignItems: "center",
@@ -183,7 +189,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                       {/* Avatar */}
                       <Image
                         src={avatar}
-                        alt=""
+                        alt={`${displayName} avatar`}
                         width={40}
                         height={40}
                         style={{
