@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import type { ContributorStats, Org, TechEntry, HeatmapWeek } from "@/types";
 
@@ -105,6 +105,21 @@ export function ProfileView({
       console.error("Copy to clipboard failed:", err);
     }
   };
+
+  // Show a "Back to top" button once the visitor scrolls past 400px. The
+  // listener is passive (it never calls preventDefault) so it does not block
+  // scrolling, and it is cleaned up on unmount.
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShowBackToTop(window.scrollY > 400);
+    onScroll(); // set the initial state in case the page loads already scrolled
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const scrollToTop = () =>
+    window.scrollTo({ top: 0, behavior: "smooth" });
 
   // Total stars across the repos shown on this page (the top repos fetched for
   // display). Derived from the `repos` prop already passed in.
@@ -545,6 +560,57 @@ export function ProfileView({
             Activity graph is a representative placeholder &mdash; precise daily counts require GitHub&rsquo;s authenticated API.
           </p>
         </div>
+      )}
+
+      {/* Back to top — fixed bottom-right, fades in past 400px of scroll.
+          Uses {colors.primary} (#3ecf8e) for the background, the only
+          chromatic accent in the design system, with white iconography. */}
+      {showBackToTop && (
+        <button
+          type="button"
+          onClick={scrollToTop}
+          aria-label="Back to top"
+          style={{
+            position: "fixed",
+            bottom: "24px",
+            right: "24px",
+            width: "44px",
+            height: "44px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "#3ecf8e",
+            color: "#ffffff",
+            border: "none",
+            borderRadius: "10px",
+            cursor: "pointer",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+            transition: "transform 0.15s, background-color 0.15s",
+            zIndex: 50,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "translateY(-2px)";
+            e.currentTarget.style.backgroundColor = "#36b97e";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "translateY(0)";
+            e.currentTarget.style.backgroundColor = "#3ecf8e";
+          }}
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="18 15 12 9 6 15" />
+          </svg>
+        </button>
       )}
     </div>
   );
