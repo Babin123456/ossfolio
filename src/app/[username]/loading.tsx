@@ -198,7 +198,7 @@ export default function ProfileLoading() {
                 gap: "12px",
               }}
             >
-              {Array.from({ length: 4 }).map((_, i) => (
+              {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
                   style={{
