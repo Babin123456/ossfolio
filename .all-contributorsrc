@@ -111,6 +111,36 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "Adit-Jain-srm",
+      "name": "Adit Jain",
+      "avatar_url": "https://avatars.githubusercontent.com/u/195575011?v=4",
+      "profile": "https://github.com/Adit-Jain-srm",
+      "contributions": [
+        "code",
+        "bug"
+      ]
+    },
+    {
+      "login": "all-contributors",
+      "name": "All Contributors",
+      "avatar_url": "https://avatars.githubusercontent.com/u/46410174?v=4",
+      "profile": "https://allcontributors.org",
+      "contributions": [
+        "doc",
+        "maintenance"
+      ]
+    },
+    {
+      "login": "abhilasha2101",
+      "name": "Abhilasha Kumari",
+      "avatar_url": "https://avatars.githubusercontent.com/u/144041389?v=4",
+      "profile": "https://github.com/abhilasha2101",
+      "contributions": [
+        "code",
+        "design"
+      ]
     }
   ],
   "contributionTypes": [

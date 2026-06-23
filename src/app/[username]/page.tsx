@@ -62,14 +62,36 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
   if (result.status !== "ok") {
     return {
       title: `${username} - OSSfolio`,
-      description: `View ${username}'s open-source profile on OSSfolio.`,
+      description: `Open-source profile for ${username}.`,
     };
   }
   const user = result.data;
   const displayName = (typeof user.name === "string" && user.name) || username;
+  const bio = typeof user.bio === "string" ? user.bio : "";
+  const publicRepos = typeof user.public_repos === "number" ? user.public_repos : 0;
+  const followers = typeof user.followers === "number" ? user.followers : 0;
+  const avatarUrl = typeof user.avatar_url === "string" ? user.avatar_url : "";
+
+  const description = bio
+    ? `${bio} | ${publicRepos} repos, ${followers} followers`
+    : `${displayName} has ${publicRepos} public repos and ${followers} followers on GitHub.`;
+
   return {
     title: `${displayName} - OSSfolio`,
-    description: `View ${displayName}'s open-source profile on OSSfolio.`,
+    description,
+    openGraph: {
+      title: `${displayName} - OSSfolio`,
+      description,
+      images: avatarUrl ? [{ url: avatarUrl, width: 400, height: 400, alt: `${displayName}'s avatar` }] : [],
+      type: "profile",
+      siteName: "OSSfolio",
+    },
+    twitter: {
+      card: "summary",
+      title: `${displayName} - OSSfolio`,
+      description,
+      images: avatarUrl ? [avatarUrl] : [],
+    },
   };
 }
 
