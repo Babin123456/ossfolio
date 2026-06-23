@@ -10,7 +10,18 @@ export async function GET(
   const { username } = await params;
   const year = request.nextUrl.searchParams.get("year");
 
-  const from = year ? `${year}-01-01` : undefined;
+  let from: string | undefined;
+  if (year !== null) {
+    if (!/^\d{4}$/.test(year)) {
+      return NextResponse.json({ error: "Invalid year parameter" }, { status: 400 });
+    }
+    const parsed = parseInt(year, 10);
+    const now = new Date().getFullYear();
+    if (parsed < now - 10 || parsed > now) {
+      return NextResponse.json({ error: "Year out of range" }, { status: 400 });
+    }
+    from = `${year}-01-01`;
+  }
   const calendar = await fetchContributionCalendar(username, from);
 
   if (!calendar) {
