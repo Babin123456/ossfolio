@@ -28,6 +28,7 @@ export function HeatmapWithYearNav({
 
   const fetchYear = useCallback(
     async (year: number) => {
+      if (year === selectedYear) return;
       if (year === currentYear && initialWeeks.length > 0) {
         setWeeks(initialWeeks);
         setCurrentStreak(initialCurrentStreak);
@@ -54,7 +55,7 @@ export function HeatmapWithYearNav({
         setLoading(false);
       }
     },
-    [username, initialWeeks, initialCurrentStreak, initialLongestStreak]
+    [username, selectedYear, initialWeeks, initialCurrentStreak, initialLongestStreak]
   );
 
   if (initialWeeks.length === 0 && weeks.length === 0) return null;
