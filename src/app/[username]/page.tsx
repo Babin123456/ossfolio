@@ -20,13 +20,19 @@ interface ProfilePageProps {
   params: Promise<{ username: string }>;
 }
 
-async function fetchGitHubUser(username: string) {
+type UserFetchResult =
+  | { status: "ok"; data: Record<string, unknown> }
+  | { status: "not_found" }
+  | { status: "error"; code: number };
+
+async function fetchGitHubUser(username: string): Promise<UserFetchResult> {
   const res = await fetch(`https://api.github.com/users/${username}`, {
     headers: { Accept: "application/vnd.github.v3+json" },
     next: { revalidate: 3600 },
   });
-  if (!res.ok) return null;
-  return res.json();
+  if (res.status === 404) return { status: "not_found" };
+  if (!res.ok) return { status: "error", code: res.status };
+  return { status: "ok", data: await res.json() };
 }
 
 async function fetchGitHubRepos(username: string) {
@@ -44,9 +50,18 @@ async function fetchGitHubRepos(username: string) {
 
 export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
   const { username } = await params;
+  const result = await fetchGitHubUser(username);
+  if (result.status !== "ok") {
+    return {
+      title: `${username} - OSSfolio`,
+      description: `View ${username}'s open-source profile on OSSfolio.`,
+    };
+  }
+  const user = result.data;
+  const displayName = (user.name as string) || username;
   return {
-    title: `${username} — OSSfolio`,
-    description: `View ${username}'s open-source profile on OSSfolio.`,
+    title: `${displayName} - OSSfolio`,
+    description: `View ${displayName}'s open-source profile on OSSfolio.`,
   };
 }
 
@@ -54,7 +69,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const { username } = await params;
 
   // Base profile + repos (already-working live data) plus the new live extras.
-  const [user, repos, liveStats, orgs, contributionCalendar] = await Promise.all([
+  const [userResult, repos, liveStats, orgs, contributionCalendar] = await Promise.all([
     fetchGitHubUser(username),
     fetchGitHubRepos(username),
     fetchLiveStats(username),
@@ -62,7 +77,11 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     fetchContributionCalendar(username),
   ]);
 
-  if (!user) notFound();
+  if (userResult.status === "not_found") notFound();
+  if (userResult.status === "error") {
+    throw new Error(`GitHub API returned ${userResult.code} for ${username}`);
+  }
+  const user = userResult.data;
 
   const mappedRepos = mapRepos(repos);
   const techStack = deriveTechStack(repos);
