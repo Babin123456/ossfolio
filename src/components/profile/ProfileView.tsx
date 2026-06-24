@@ -4,8 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { HeatmapWithYearNav } from "@/components/profile/HeatmapWithYearNav";
-import type { ContributorStats, Org, TechEntry, HeatmapWeek } from "@/types";
+import type { ContributorStats, Org, TechEntry, HeatmapWeek, BadgeItem } from "@/types";
 import { toPng } from "html-to-image";
+import { supabase } from "@/lib/supabase";
 
 interface GitHubUser {
   login: string;
@@ -52,6 +53,39 @@ const LANG_COLORS: Record<string, string> = {
   PHP: "#4F5D95",
 };
 
+const PROGRAM_STYLING: Record<string, { gradient: string; text: string; bg: string }> = {
+  GSSoC: {
+    gradient: "linear-gradient(135deg, #FF9900 0%, #FF5E36 100%)",
+    text: "#ffffff",
+    bg: "rgba(255, 153, 0, 0.1)",
+  },
+  Hacktoberfest: {
+    gradient: "linear-gradient(135deg, #FF2201 0%, #FF007A 100%)",
+    text: "#ffffff",
+    bg: "rgba(255, 34, 1, 0.1)",
+  },
+  EluSoC: {
+    gradient: "linear-gradient(135deg, #6b01c2 0%, #00d2ff 100%)",
+    text: "#ffffff",
+    bg: "rgba(107, 1, 194, 0.1)",
+  },
+  GSoC: {
+    gradient: "linear-gradient(135deg, #34A853 0%, #4285F4 100%)",
+    text: "#ffffff",
+    bg: "rgba(66, 133, 244, 0.1)",
+  },
+  "MLH Fellowship": {
+    gradient: "linear-gradient(135deg, #004B87 0%, #00A3E0 100%)",
+    text: "#ffffff",
+    bg: "rgba(0, 75, 135, 0.1)",
+  },
+  SWoC: {
+    gradient: "linear-gradient(135deg, #00b4ab 0%, #3ecf8e 100%)",
+    text: "#ffffff",
+    bg: "rgba(0, 180, 171, 0.1)",
+  },
+};
+
 interface ProfileExtras {
   stats: ContributorStats;
   techStack: TechEntry[];
@@ -62,6 +96,8 @@ interface ProfileExtras {
   score: number;
   /** ISO 8601 timestamp from Supabase profiles.updated_at — null if the user has never synced. */
   updatedAt: string | null;
+  badges: BadgeItem[];
+  profileId: string | null;
 }
 
 /** Format an ISO timestamp as a human-readable relative string for the profile header. */
@@ -89,6 +125,8 @@ export function ProfileView({
   longestStreak,
   score,
   updatedAt,
+  badges = [],
+  profileId,
 }: { user: GitHubUser; repos: GitHubRepo[] } & ProfileExtras) {
   const displayName = user.name || user.login;
   const website = user.blog
@@ -100,6 +138,172 @@ export function ProfileView({
   const [copied, setCopied] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  // Program Badges State
+  const [badgesList, setBadgesList] = useState<BadgeItem[]>(badges);
+  const [prevBadges, setPrevBadges] = useState<BadgeItem[]>(badges);
+
+  if (badges !== prevBadges) {
+    setPrevBadges(badges);
+    setBadgesList(badges);
+  }
+
+  const [authUser, setAuthUser] = useState<any>(null);
+  const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false);
+  const [selectedProgram, setSelectedProgram] = useState("GSSoC");
+  const [selectedYear, setSelectedYear] = useState(2026);
+  const [isSavingBadge, setIsSavingBadge] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  // Resolve the current session on mount and keep it in sync with auth changes
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (active) setAuthUser(data.session?.user ?? null);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (active) setAuthUser(session?.user ?? null);
+    });
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  // Sync native dialog element with state
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (isBadgeModalOpen) {
+      if (!dialog.open) dialog.showModal();
+    } else {
+      if (dialog.open) dialog.close();
+    }
+  }, [isBadgeModalOpen]);
+
+  // Modal events setup for native close & backdrop click fallback
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    const handleClose = () => {
+      setIsBadgeModalOpen(false);
+    };
+
+    const handleClick = (e: MouseEvent) => {
+      if (e.target === dialog) {
+        const rect = dialog.getBoundingClientRect();
+        const clickInside =
+          rect.top <= e.clientY &&
+          e.clientY <= rect.top + rect.height &&
+          rect.left <= e.clientX &&
+          e.clientX <= rect.left + rect.width;
+        if (!clickInside) {
+          setIsBadgeModalOpen(false);
+        }
+      }
+    };
+
+    dialog.addEventListener("close", handleClose);
+    dialog.addEventListener("click", handleClick);
+    return () => {
+      dialog.removeEventListener("close", handleClose);
+      dialog.removeEventListener("click", handleClick);
+    };
+  }, []);
+
+  const isOwner = !!(
+    authUser && (
+      (profileId && authUser.id === profileId) ||
+      (!profileId && authUser.user_metadata?.user_name?.toLowerCase() === user.login?.toLowerCase())
+    )
+  );
+
+  console.log("ProfileView Auth Check:", {
+    profileId,
+    authUserId: authUser?.id,
+    authUserGitHub: authUser?.user_metadata?.user_name,
+    viewingLogin: user.login,
+    isOwner
+  });
+
+  const handleAddBadge = async () => {
+    const targetProfileId = profileId || authUser?.id;
+    if (!targetProfileId) return;
+    setIsSavingBadge(true);
+    try {
+      // Create new list of badges
+      const existingBadgeIndex = badgesList.findIndex(
+        (b) => b.program === selectedProgram
+      );
+      let updatedList: BadgeItem[] = [];
+      if (existingBadgeIndex > -1) {
+        // Append year if not already present, sort desc
+        const currentYears = badgesList[existingBadgeIndex].years;
+        const updatedYears = currentYears.includes(selectedYear)
+          ? currentYears
+          : [...currentYears, selectedYear].sort((a, b) => b - a);
+        updatedList = badgesList.map((b, idx) =>
+          idx === existingBadgeIndex ? { ...b, years: updatedYears } : b
+        );
+      } else {
+        // Add new badge
+        updatedList = [
+          ...badgesList,
+          { program: selectedProgram, years: [selectedYear] },
+        ];
+      }
+
+      const { error } = await supabase
+        .from("profiles")
+        .upsert({
+          id: targetProfileId,
+          username: user.login,
+          badges: updatedList,
+          updated_at: new Date().toISOString(),
+        });
+
+      if (error) {
+        console.error("Failed to save badge to database:", error.message);
+        alert(`Failed to save badge: ${error.message}`);
+      } else {
+        setBadgesList(updatedList);
+        setIsBadgeModalOpen(false);
+      }
+    } catch (err) {
+      console.error("Error saving badge:", err);
+    } finally {
+      setIsSavingBadge(false);
+    }
+  };
+
+  const handleRemoveBadge = async (program: string) => {
+    const targetProfileId = profileId || authUser?.id;
+    if (!targetProfileId) return;
+    const confirmRemove = confirm(`Are you sure you want to remove the ${program} badge?`);
+    if (!confirmRemove) return;
+
+    try {
+      const updatedList = badgesList.filter((b) => b.program !== program);
+      const { error } = await supabase
+        .from("profiles")
+        .upsert({
+          id: targetProfileId,
+          username: user.login,
+          badges: updatedList,
+          updated_at: new Date().toISOString(),
+        });
+
+      if (error) {
+        console.error("Failed to remove badge from database:", error.message);
+        alert(`Failed to remove badge: ${error.message}`);
+      } else {
+        setBadgesList(updatedList);
+      }
+    } catch (err) {
+      console.error("Error removing badge:", err);
+    }
+  };
 
   const handleCopyLink = async () => {
     try {
@@ -481,6 +685,114 @@ export function ProfileView({
           )}
         </div>
       </div>
+
+      {/* Badges section */}
+      {(badgesList.length > 0 || isOwner) && (
+        <div style={{ marginTop: "32px", borderBottom: "1px solid var(--color-hairline)", paddingBottom: "32px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--color-ink)", margin: 0, letterSpacing: "-0.2px" }}>
+              Badges
+            </h2>
+            {isOwner && (
+              <button
+                type="button"
+                onClick={() => setIsBadgeModalOpen(true)}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  padding: "6px 12px",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  color: "#ffffff",
+                  backgroundColor: "#3ecf8e",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  lineHeight: 1,
+                  transition: "background-color 0.15s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#24b47e")}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#3ecf8e")}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Add badge
+              </button>
+            )}
+          </div>
+          {badgesList.length === 0 ? (
+            <p style={{ fontSize: "13px", color: "var(--color-ink-mute)", margin: 0 }}>
+              No badges claimed yet. Click &quot;Add badge&quot; to show your participation.
+            </p>
+          ) : (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+              {badgesList.map((badge) => {
+                const style = PROGRAM_STYLING[badge.program] || {
+                  gradient: "linear-gradient(135deg, #707070 0%, #9a9a9a 100%)",
+                  text: "#ffffff",
+                  bg: "rgba(128, 128, 128, 0.1)",
+                };
+                return (
+                  <div
+                    key={badge.program}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      padding: "6px 14px",
+                      borderRadius: "9999px",
+                      background: style.gradient,
+                      color: style.text,
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
+                      transition: "transform 0.15s",
+                    }}
+                  >
+                    <span>{badge.program}</span>
+                    <span
+                      style={{
+                        backgroundColor: "rgba(255, 255, 255, 0.25)",
+                        padding: "2px 6px",
+                        borderRadius: "9999px",
+                        fontSize: "11px",
+                        fontWeight: 500,
+                      }}
+                    >
+                      {badge.years.join(", ")}
+                    </span>
+                    {isOwner && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveBadge(badge.program)}
+                        title={`Remove ${badge.program} badge`}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "rgba(255, 255, 255, 0.8)",
+                          cursor: "pointer",
+                          padding: 0,
+                          display: "flex",
+                          alignItems: "center",
+                          fontSize: "16px",
+                          marginLeft: "4px",
+                          lineHeight: 1,
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = "#ffffff")}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255, 255, 255, 0.8)")}
+                      >
+                        &times;
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Repos */}
       <div style={{ marginTop: "40px" }}>
@@ -871,6 +1183,113 @@ export function ProfileView({
           </div>
         </div>
       </div>
+
+      {/* Add Badge Modal */}
+      {isOwner && (
+        <dialog
+          ref={dialogRef}
+          style={{
+            border: "1px solid var(--color-hairline)",
+            borderRadius: "12px",
+            padding: "24px",
+            backgroundColor: "var(--color-canvas)",
+            color: "var(--color-ink)",
+            maxWidth: "400px",
+            width: "calc(100% - 32px)",
+            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <h3 style={{ fontSize: "18px", fontWeight: 600, margin: 0, color: "var(--color-ink)", letterSpacing: "-0.2px" }}>
+              Add Program Badge
+            </h3>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label htmlFor="program-select" style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-ink-mute)" }}>
+                Program
+              </label>
+              <select
+                id="program-select"
+                value={selectedProgram}
+                onChange={(e) => setSelectedProgram(e.target.value)}
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: "6px",
+                  border: "1px solid var(--color-hairline-strong)",
+                  backgroundColor: "var(--color-canvas)",
+                  color: "var(--color-ink)",
+                  fontSize: "14px",
+                  width: "100%",
+                }}
+              >
+                {["GSSoC", "Hacktoberfest", "EluSoC", "GSoC", "MLH Fellowship", "SWoC"].map((p) => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label htmlFor="year-select" style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-ink-mute)" }}>
+                Year
+              </label>
+              <select
+                id="year-select"
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: "6px",
+                  border: "1px solid var(--color-hairline-strong)",
+                  backgroundColor: "var(--color-canvas)",
+                  color: "var(--color-ink)",
+                  fontSize: "14px",
+                  width: "100%",
+                }}
+              >
+                {[2026, 2025, 2024, 2023, 2022, 2021, 2020].map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "8px" }}>
+              <button
+                type="button"
+                onClick={() => setIsBadgeModalOpen(false)}
+                style={{
+                  padding: "8px 14px",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  color: "var(--color-ink)",
+                  backgroundColor: "var(--color-canvas)",
+                  border: "1px solid var(--color-hairline-strong)",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleAddBadge}
+                disabled={isSavingBadge}
+                style={{
+                  padding: "8px 14px",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  color: "#ffffff",
+                  backgroundColor: "#3ecf8e",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: isSavingBadge ? "not-allowed" : "pointer",
+                }}
+              >
+                {isSavingBadge ? "Saving..." : "Add"}
+              </button>
+            </div>
+          </div>
+        </dialog>
+      )}
     </div>
   );
 }
