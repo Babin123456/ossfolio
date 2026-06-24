@@ -200,13 +200,7 @@ export function ProfileView({
     )
   );
 
-  console.log("ProfileView Auth Check:", {
-    profileId,
-    authUserId: authUser?.id,
-    authUserGitHub: authUser?.user_metadata?.user_name,
-    viewingLogin: user.login,
-    isOwner
-  });
+
 
   const handleAddBadge = async () => {
     const targetProfileId = profileId || authUser?.id;
@@ -749,6 +743,7 @@ export function ProfileView({
                         type="button"
                         onClick={() => handleRemoveBadge(badge.program)}
                         title={`Remove ${badge.program} badge`}
+                        aria-label={`Remove ${badge.program} badge`}
                         style={{
                           background: "none",
                           border: "none",
@@ -969,7 +964,7 @@ export function ProfileView({
                   backgroundColor: "var(--color-canvas-soft)",
                 }}
               >
-                <span style={{ width: "10px", height: "10px", backgroundColor: LANG_COLORS[language] ?? "#9a9aa", borderRadius: "9999px", flexShrink: 0, display: "inline-block" }}></span>{language}
+                <span style={{ width: "10px", height: "10px", backgroundColor: LANG_COLORS[language] ?? "#9a9a9a", borderRadius: "9999px", flexShrink: 0, display: "inline-block" }}></span>{language}
                 <span style={{ color: "var(--color-ink-mute)", fontSize: "12px" }}>×{repoCount}</span>
               </span>
             ))}
@@ -1037,8 +1032,6 @@ export function ProfileView({
           </div>
           <div
             style={{
-              display: "flex",
-              gap: "3px",
               overflowX: "auto",
               padding: "16px",
               border: "1px solid var(--color-hairline)",
@@ -1046,27 +1039,32 @@ export function ProfileView({
               backgroundColor: "var(--color-canvas-soft)",
             }}
           >
-            {/* Month labels */}
-            <div style={{ display: "flex", gap: "3px", marginBottom: "4px", fontSize: "11px", color: "var(--color-ink-mute)" }}>
-              {heatmap.map((week, wi) => {
-                const month = new Date(week.days[0].date).toLocaleString('en-US', { month: 'short' });
-                const show = wi === 0 || month !== new Date(heatmap[wi - 1].days[0].date).toLocaleString('en-US', { month: 'short' });
-                return (
-                  <span key={wi} style={{ width: "11px", textAlign: "center" }}>{show ? month : ""}</span>
-                );
-              })}
-            </div>
-            {heatmap.map((week, wi) => (
-              <div key={wi} style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
-                {week.days.map((day, di) => (
-                  <div
-                    key={di}
-                    title={`${day.count} contributions on ${day.date}`}
-                    style={{ width: "11px", height: "11px", borderRadius: "2px", backgroundColor: day.color, flexShrink: 0 }}
-                  />
+            <div style={{ display: "flex", flexDirection: "column", minWidth: "max-content" }}>
+              {/* Month labels */}
+              <div style={{ display: "flex", gap: "3px", marginBottom: "4px", fontSize: "11px", color: "var(--color-ink-mute)" }}>
+                {heatmap.map((week, wi) => {
+                  const month = new Date(week.days[0].date).toLocaleString('en-US', { month: 'short' });
+                  const show = wi === 0 || month !== new Date(heatmap[wi - 1].days[0].date).toLocaleString('en-US', { month: 'short' });
+                  return (
+                    <span key={wi} style={{ width: "11px", textAlign: "center", flexShrink: 0 }}>{show ? month : ""}</span>
+                  );
+                })}
+              </div>
+              {/* Weeks grid */}
+              <div style={{ display: "flex", gap: "3px" }}>
+                {heatmap.map((week, wi) => (
+                  <div key={wi} style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+                    {week.days.map((day, di) => (
+                      <div
+                        key={di}
+                        title={`${day.count} contributions on ${day.date}`}
+                        style={{ width: "11px", height: "11px", borderRadius: "2px", backgroundColor: day.color, flexShrink: 0 }}
+                      />
+                    ))}
+                  </div>
                 ))}
               </div>
-            ))}
+            </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "4px", margin: "10px 0 0 0" }}>
             <span style={{ fontSize: "12px", color: "var(--color-ink-mute)", marginRight: "2px" }}>Less</span>
