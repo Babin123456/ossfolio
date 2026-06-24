@@ -1242,6 +1242,11 @@ export function ProfileView({
         <dialog
           ref={dialogRef}
           style={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            margin: 0,
             border: "1px solid var(--color-hairline)",
             borderRadius: "12px",
             padding: "24px",
