@@ -545,7 +545,7 @@ export function ProfileView({
                     ))}
                     {repo.topics.length > 3 && (
                       <span style={{ fontSize: "11px", padding: "2px 6px", color: "var(--color-ink-mute)" }}>
-                        +{repo.topics.length - 3}
+                        +{repo.topics.length - 3} more
                       </span>
                     )}
                   </div>
