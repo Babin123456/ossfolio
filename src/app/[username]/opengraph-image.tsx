@@ -40,11 +40,11 @@ export default async function OGImage({ params }: OGImageProps) {
 
   // Extract the font file URL for weight 500 (medium) — used for display text
   const mediumUrlMatch = interFontData.match(
-    /font-weight:\s*500;[^}]*?src:\s*url\(([^)]+)\)/s
+    /font-weight:\s*500;[^}]*?src:\s*url\(([^)]+)\)/
   );
   // Extract the font file URL for weight 400 (regular) — used for body text
   const regularUrlMatch = interFontData.match(
-    /font-weight:\s*400;[^}]*?src:\s*url\(([^)]+)\)/s
+    /font-weight:\s*400;[^}]*?src:\s*url\(([^)]+)\)/
   );
 
   const [interMedium, interRegular] = await Promise.all([
