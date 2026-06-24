@@ -20,8 +20,23 @@ interface ProfilePageProps {
   params: Promise<{ username: string }>;
 }
 
+interface GitHubUserData {
+  login: string;
+  name: string | null;
+  bio: string | null;
+  avatar_url: string;
+  html_url: string;
+  blog: string | null;
+  location: string | null;
+  twitter_username: string | null;
+  followers: number;
+  following: number;
+  public_repos: number;
+  [key: string]: unknown;
+}
+
 type UserFetchResult =
-  | { status: "ok"; data: Record<string, unknown> }
+  | { status: "ok"; data: GitHubUserData }
   | { status: "not_found" }
   | { status: "error"; code: number };
 
@@ -66,11 +81,11 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
     };
   }
   const user = result.data;
-  const displayName = (typeof user.name === "string" && user.name) || username;
-  const bio = typeof user.bio === "string" ? user.bio : "";
-  const publicRepos = typeof user.public_repos === "number" ? user.public_repos : 0;
-  const followers = typeof user.followers === "number" ? user.followers : 0;
-  const avatarUrl = typeof user.avatar_url === "string" ? user.avatar_url : "";
+  const displayName = user.name || username;
+  const bio = user.bio || "";
+  const publicRepos = user.public_repos;
+  const followers = user.followers;
+  const avatarUrl = user.avatar_url;
 
   const description = bio
     ? `${bio} | ${publicRepos} repos, ${followers} followers`
@@ -82,7 +97,7 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
     openGraph: {
       title: `${displayName} - OSSfolio`,
       description,
-      images: avatarUrl ? [{ url: avatarUrl, width: 400, height: 400, alt: `${displayName}'s avatar` }] : [],
+      images: [{ url: avatarUrl, width: 400, height: 400, alt: `${displayName}'s avatar` }],
       type: "profile",
       siteName: "OSSfolio",
     },
@@ -90,7 +105,7 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
       card: "summary",
       title: `${displayName} - OSSfolio`,
       description,
-      images: avatarUrl ? [avatarUrl] : [],
+      images: [avatarUrl],
     },
   };
 }
