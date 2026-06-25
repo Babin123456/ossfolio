@@ -20,55 +20,35 @@ interface ProfilePageProps {
   params: Promise<{ username: string }>;
 }
 
-interface GitHubUserData {
-  login: string;
-  name: string | null;
-  bio: string | null;
-  avatar_url: string;
-  html_url: string;
-  blog: string | null;
-  location: string | null;
-  twitter_username: string | null;
-  followers: number;
-  following: number;
-  public_repos: number;
-  [key: string]: unknown;
-}
-
-type UserFetchResult =
-  | { status: "ok"; data: GitHubUserData }
-  | { status: "not_found" }
-  | { status: "error"; code: number };
-
-async function fetchGitHubUser(username: string): Promise<UserFetchResult> {
-  try {
-    const res = await fetch(`https://api.github.com/users/${username}`, {
-      headers: { Accept: "application/vnd.github.v3+json" },
-      next: { revalidate: 3600 },
-    });
-    if (res.status === 404) return { status: "not_found" };
-    if (!res.ok) return { status: "error", code: res.status };
-    return { status: "ok", data: await res.json() };
-  } catch {
-    return { status: "error", code: 0 };
+async function fetchGitHubUser(username: string) {
+  const res = await fetch(`https://api.github.com/users/${username}`, {
+    headers: { Accept: "application/vnd.github.v3+json" },
+    next: { revalidate: 3600 },
+  });
+  if (!res.ok) {
+    // Detect rate limit based on GitHub response
+    try {
+      const err = await res.json();
+      if (err.message && err.message.toLowerCase().includes("rate limit")) {
+        throw new Error("RateLimit");
+      }
+    } catch {}
+    return null;
   }
+  return res.json();
 }
 
 async function fetchGitHubRepos(username: string) {
-  try {
-    const res = await fetch(
-      `https://api.github.com/users/${username}/repos?sort=stars&per_page=12&type=owner`,
-      {
-        headers: { Accept: "application/vnd.github.mercy-preview+json" },
-        next: { revalidate: 3600 },
-      }
-    );
-    if (!res.ok) return [];
-    const repos = await res.json();
-    return repos.filter((r: { fork: boolean }) => !r.fork).slice(0, 6);
-  } catch {
-    return [];
-  }
+  const res = await fetch(
+    `https://api.github.com/users/${username}/repos?sort=stars&per_page=100&type=owner`,
+    {
+      headers: { Accept: "application/vnd.github.mercy-preview+json" },
+      next: { revalidate: 3600 },
+    }
+  );
+  if (!res.ok) return [];
+  const repos = await res.json();
+  return repos.filter((r: { fork: boolean }) => !r.fork).slice(0, 6);
 }
 
 export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
@@ -97,15 +77,15 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
     openGraph: {
       title: `${displayName} - OSSfolio`,
       description,
-      images: [{ url: avatarUrl, width: 400, height: 400, alt: `${displayName}'s avatar` }],
+      // og:image is auto-injected by opengraph-image.tsx
       type: "profile",
       siteName: "OSSfolio",
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title: `${displayName} - OSSfolio`,
       description,
-      images: [avatarUrl],
+      // twitter:image is auto-injected by twitter-image.tsx
     },
   };
 }
@@ -114,13 +94,24 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const { username } = await params;
 
   // Base profile + repos (already-working live data) plus the new live extras.
-  const [userResult, repos, liveStats, orgs, contributionCalendar] = await Promise.all([
-    fetchGitHubUser(username),
-    fetchGitHubRepos(username),
-    fetchLiveStats(username),
-    fetchOrganizations(username),
-    fetchContributionCalendar(username),
-  ]);
+  let rateLimited = false;
+  let user: any = null;
+  let repos: any = [];
+  let liveStats: any = null;
+  let orgs: any = [];
+  let contributionCalendar: any = null;
+
+  try {
+    user = await fetchGitHubUser(username);
+  } catch (e) {
+    if (e instanceof Error && e.message === "RateLimit") rateLimited = true;
+    user = null;
+  }
+  // Other fetches can also error on rate limit; we treat them similarly.
+  try { repos = await fetchGitHubRepos(username); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
+  try { liveStats = await fetchLiveStats(username); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
+  try { orgs = await fetchOrganizations(username); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
+  try { contributionCalendar = await fetchContributionCalendar(username); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
 
   if (userResult.status === "not_found") notFound();
   if (userResult.status === "error") {
@@ -188,6 +179,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           longestStreak={longestStreak}
           score={score}
           updatedAt={updatedAt}
+          rateLimited={rateLimited}
         />
       </main>
       <Footer />
