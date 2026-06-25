@@ -108,7 +108,27 @@ export function ProfileView({
   updatedAt,
   badges = [],
   profileId,
-}: { user: GitHubUser; repos: GitHubRepo[] } & ProfileExtras) {
+  rateLimited,
+}: { user: GitHubUser; repos: GitHubRepo[] } & ProfileExtras & { rateLimited?: boolean }) {
+  const [copied, setCopied] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShowBackToTop(window.scrollY > 400);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  if (rateLimited) {
+    return (
+      <div style={{ color: 'var(--color-ink-mute)', backgroundColor: 'var(--color-canvas-soft)', padding: '16px', borderRadius: '8px', textAlign: 'center', marginBottom: '24px' }}>
+        GitHub data is temporarily unavailable. Please try again later.
+      </div>
+    );
+  }
   const displayName = user.name || user.login;
   const website = user.blog
     ? user.blog.startsWith("http")
@@ -116,9 +136,7 @@ export function ProfileView({
       : `https://${user.blog}`
     : null;
 
-  const [copied, setCopied] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
+  
 
   // Program Badges State
   const sanitizeBadges = (raw: any[]): BadgeItem[] => {
@@ -337,14 +355,7 @@ export function ProfileView({
   };
 
   // Show a "Back to top" button once the visitor scrolls past 400px.
-  const [showBackToTop, setShowBackToTop] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setShowBackToTop(window.scrollY > 400);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  
 
 
   const scrollToTop = () =>
