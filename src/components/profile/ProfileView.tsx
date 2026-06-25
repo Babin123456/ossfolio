@@ -115,29 +115,6 @@ export function ProfileView({
   const cardRef = useRef<HTMLDivElement>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
 
-  useEffect(() => {
-    const onScroll = () => setShowBackToTop(window.scrollY > 400);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  if (rateLimited) {
-    return (
-      <div style={{ color: 'var(--color-ink-mute)', backgroundColor: 'var(--color-canvas-soft)', padding: '16px', borderRadius: '8px', textAlign: 'center', marginBottom: '24px' }}>
-        GitHub data is temporarily unavailable. Please try again later.
-      </div>
-    );
-  }
-  const displayName = user.name || user.login;
-  const website = user.blog
-    ? user.blog.startsWith("http")
-      ? user.blog
-      : `https://${user.blog}`
-    : null;
-
-  
-
   // Program Badges State
   const sanitizeBadges = (raw: any[]): BadgeItem[] => {
     if (!Array.isArray(raw)) return [];
@@ -158,13 +135,6 @@ export function ProfileView({
   };
 
   const [badgesList, setBadgesList] = useState<BadgeItem[]>(() => sanitizeBadges(badges));
-  const [prevBadges, setPrevBadges] = useState<BadgeItem[]>(badges);
-
-  if (badges !== prevBadges) {
-    setPrevBadges(badges);
-    setBadgesList(sanitizeBadges(badges));
-  }
-
   const [authUser, setAuthUser] = useState<any>(null);
   const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState("GSSoC");
@@ -179,6 +149,19 @@ export function ProfileView({
       (!profileId && authUser.user_metadata?.user_name?.toLowerCase() === user.login?.toLowerCase())
     )
   );
+
+  // Sync badges from props in effect (instead of setState during render)
+  useEffect(() => {
+    setBadgesList(sanitizeBadges(badges));
+  }, [badges]);
+
+  // Scroll visibility effect
+  useEffect(() => {
+    const onScroll = () => setShowBackToTop(window.scrollY > 400);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   // Resolve the current session on mount and keep it in sync with auth changes
   useEffect(() => {
@@ -232,7 +215,21 @@ export function ProfileView({
     };
   }, [isBadgeModalOpen, isOwner]);
 
+  // Conditional rendering
+  if (rateLimited) {
+    return (
+      <div style={{ color: 'var(--color-ink-mute)', backgroundColor: 'var(--color-canvas-soft)', padding: '16px', borderRadius: '8px', textAlign: 'center', marginBottom: '24px' }}>
+        GitHub data is temporarily unavailable. Please try again later.
+      </div>
+    );
+  }
 
+  const displayName = user?.name || user?.login;
+  const website = user?.blog
+    ? user.blog.startsWith("http")
+      ? user.blog
+      : `https://${user.blog}`
+    : null;
 
   const handleAddBadge = async () => {
     if (!profileId) {
