@@ -32,6 +32,7 @@ interface GitHubRepo {
   forks_count: number;
   language: string | null;
   topics?: string[];
+  pushed_at?: string;
 }
 
 
@@ -112,6 +113,7 @@ export function ProfileView({
   rateLimited,
 }: { user: GitHubUser; repos: GitHubRepo[] } & ProfileExtras & { rateLimited?: boolean }) {
   const [copied, setCopied] = useState(false);
+  const [repoSort, setRepoSort] = useState<"stars" | "forks" | "updated">("stars");
   const [isDownloading, setIsDownloading] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -803,9 +805,32 @@ export function ProfileView({
 
       {/* Repos */}
       <div style={{ marginTop: "40px" }}>
-        <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--color-ink)", margin: "0 0 20px 0", letterSpacing: "-0.2px" }}>
-          Popular repositories
-        </h2>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 20px 0", flexWrap: "wrap", gap: "12px" }}>
+          <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--color-ink)", margin: 0, letterSpacing: "-0.2px" }}>
+            Popular repositories
+          </h2>
+          <div style={{ display: "flex", gap: "6px" }}>
+            {(["stars", "forks", "updated"] as const).map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setRepoSort(option)}
+                style={{
+                  padding: "4px 10px",
+                  fontSize: "12px",
+                  fontWeight: repoSort === option ? 600 : 400,
+                  color: repoSort === option ? "#171717" : "var(--color-ink-mute)",
+                  backgroundColor: repoSort === option ? "#3ecf8e" : "var(--color-canvas-soft)",
+                  border: repoSort === option ? "none" : "1px solid var(--color-hairline)",
+                  borderRadius: "9999px",
+                  cursor: "pointer",
+                }}
+              >
+                {option === "stars" ? "Stars" : option === "forks" ? "Forks" : "Recent"}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {repos.length === 0 ? (
           <p style={{ fontSize: "13px", color: "var(--color-ink-mute)", margin: 0 }}>
@@ -814,7 +839,11 @@ export function ProfileView({
         ) : (
           <>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
-            {repos.map((repo) => (
+            {[...repos].sort((a, b) => {
+              if (repoSort === "forks") return b.forks_count - a.forks_count;
+              if (repoSort === "updated") return (b.pushed_at || "").localeCompare(a.pushed_at || "");
+              return b.stargazers_count - a.stargazers_count;
+            }).map((repo) => (
               <a
                 key={repo.id}
                 href={repo.html_url}
