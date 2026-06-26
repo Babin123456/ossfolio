@@ -60,3 +60,14 @@ $$;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- ============================================================
+-- INDEXES
+-- Performance optimizations for profile querying and explore sorting actions
+-- ============================================================
+create index if not exists idx_profiles_score on public.profiles (score desc);
+create index if not exists idx_profiles_total_prs on public.profiles (total_prs desc);
+create index if not exists idx_profiles_total_commits on public.profiles (total_commits desc);
+create index if not exists idx_profiles_total_issues on public.profiles (total_issues desc);
+create index if not exists idx_profiles_username_name_trgm on public.profiles (username, name);
+
