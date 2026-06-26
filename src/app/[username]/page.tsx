@@ -16,26 +16,42 @@ import { supabase } from "@/lib/supabase";
 
 export const runtime = "edge";
 
+interface GitHubUser {
+  login: string;
+  name: string | null;
+  bio: string | null;
+  avatar_url: string;
+  html_url: string;
+  public_repos: number;
+  followers: number;
+  following: number;
+  blog: string | null;
+  location: string | null;
+  twitter_username: string | null;
+}
+
 interface ProfilePageProps {
   params: Promise<{ username: string }>;
 }
 
-async function fetchGitHubUser(username: string) {
+async function fetchGitHubUser(username: string): Promise<GitHubUser | null> {
   const res = await fetch(`https://api.github.com/users/${username}`, {
     headers: { Accept: "application/vnd.github.v3+json" },
     next: { revalidate: 3600 },
+    signal: AbortSignal.timeout(10000),
   });
   if (!res.ok) {
-    // Detect rate limit based on GitHub response
     try {
       const err = await res.json();
       if (err.message && err.message.toLowerCase().includes("rate limit")) {
         throw new Error("RateLimit");
       }
-    } catch {}
+    } catch (e) {
+      if (e instanceof Error && e.message === "RateLimit") throw e;
+    }
     return null;
   }
-  return res.json();
+  return res.json() as Promise<GitHubUser>;
 }
 
 async function fetchGitHubRepos(username: string) {
@@ -53,19 +69,22 @@ async function fetchGitHubRepos(username: string) {
 
 export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
   const { username } = await params;
-  const result = await fetchGitHubUser(username);
-  if (result.status !== "ok") {
+  let user: GitHubUser | null = null;
+  try {
+    user = await fetchGitHubUser(username);
+  } catch {
+    // Rate limit or network error - fall back to minimal metadata
+  }
+  if (!user) {
     return {
       title: `${username} - OSSfolio`,
       description: `Open-source profile for ${username}.`,
     };
   }
-  const user = result.data;
-  const displayName = user.name || username;
+  const displayName = user.name || user.login;
   const bio = user.bio || "";
   const publicRepos = user.public_repos;
   const followers = user.followers;
-  const avatarUrl = user.avatar_url;
 
   const description = bio
     ? `${bio} | ${publicRepos} repos, ${followers} followers`
@@ -77,7 +96,6 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
     openGraph: {
       title: `${displayName} - OSSfolio`,
       description,
-      // og:image is auto-injected by opengraph-image.tsx
       type: "profile",
       siteName: "OSSfolio",
     },
@@ -85,7 +103,6 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
       card: "summary_large_image",
       title: `${displayName} - OSSfolio`,
       description,
-      // twitter:image is auto-injected by twitter-image.tsx
     },
   };
 }
@@ -95,7 +112,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   // Base profile + repos (already-working live data) plus the new live extras.
   let rateLimited = false;
-  let user: any = null;
+  let user: GitHubUser | null = null;
   let repos: any = [];
   let liveStats: any = null;
   let orgs: any = [];
@@ -113,8 +130,36 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   try { orgs = await fetchOrganizations(username); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
   try { contributionCalendar = await fetchContributionCalendar(username); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
 
-  if (!user) notFound();
+  if (!user && !rateLimited) return notFound();
 
+  if (!user && rateLimited) {
+    return (
+      <>
+        <Navbar />
+        <main
+          style={{
+            backgroundColor: "var(--color-canvas)",
+            color: "var(--color-ink)",
+            minHeight: "100vh",
+            transition: "background-color 0.2s ease, color 0.2s ease",
+          }}
+        >
+          <div style={{ maxWidth: "640px", margin: "0 auto", padding: "96px 20px", textAlign: "center" }}>
+            <h1 style={{ fontSize: "22px", fontWeight: 500, margin: "0 0 12px 0" }}>
+              Temporarily Unavailable
+            </h1>
+            <p style={{ fontSize: "15px", color: "var(--color-ink-mute)", margin: 0 }}>
+              GitHub API rate limit reached. Profile data for <strong>@{username}</strong> cannot be
+              loaded right now. Please try again in a few minutes.
+            </p>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  const profileUser = user!;
   const mappedRepos = mapRepos(repos);
   const techStack = deriveTechStack(repos);
 
@@ -183,7 +228,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         }}
       >
         <ProfileView
-          user={user}
+          user={profileUser}
           repos={repos}
           stats={stats}
           techStack={techStack}
