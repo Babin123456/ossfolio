@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { HeatmapWithYearNav } from "@/components/profile/HeatmapWithYearNav";
 import type { ContributorStats, Org, TechEntry, HeatmapWeek, BadgeItem } from "@/types";
 import { toPng } from "html-to-image";
@@ -115,6 +116,11 @@ export function ProfileView({
   const [copied, setCopied] = useState(false);
   const [repoSort, setRepoSort] = useState<"stars" | "forks" | "updated">("stars");
   const [isDownloading, setIsDownloading] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const [repoFilter, setRepoFilter] = useState("");
+
+  const focusSearch = useCallback(() => searchRef.current?.focus(), []);
+  useKeyboardShortcuts({ onSlash: focusSearch });
   const cardRef = useRef<HTMLDivElement>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
 
@@ -805,7 +811,7 @@ export function ProfileView({
 
       {/* Repos */}
       <div style={{ marginTop: "40px" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 20px 0", flexWrap: "wrap", gap: "12px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 12px 0", flexWrap: "wrap", gap: "12px" }}>
           <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--color-ink)", margin: 0, letterSpacing: "-0.2px" }}>
             Popular repositories
           </h2>
@@ -844,7 +850,7 @@ export function ProfileView({
               if (repoSort === "forks") return b.forks_count - a.forks_count;
               if (repoSort === "updated") return (b.pushed_at || "").localeCompare(a.pushed_at || "");
               return b.stargazers_count - a.stargazers_count;
-            }).map((repo) => (
+            }).filter((repo) => !repoFilter || repo.name.toLowerCase().includes(repoFilter.toLowerCase()) || (repo.description || "").toLowerCase().includes(repoFilter.toLowerCase())).map((repo) => (
               <a
                 key={repo.id}
                 href={repo.html_url}
