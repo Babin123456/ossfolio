@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { HeatmapWithYearNav } from "@/components/profile/HeatmapWithYearNav";
 import type { ContributorStats, Org, TechEntry, HeatmapWeek, BadgeItem } from "@/types";
 import { toPng } from "html-to-image";
@@ -113,6 +114,11 @@ export function ProfileView({
 }: { user: GitHubUser; repos: GitHubRepo[] } & ProfileExtras & { rateLimited?: boolean }) {
   const [copied, setCopied] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const [repoFilter, setRepoFilter] = useState("");
+
+  const focusSearch = useCallback(() => searchRef.current?.focus(), []);
+  useKeyboardShortcuts({ onSlash: focusSearch });
   const cardRef = useRef<HTMLDivElement>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
 
@@ -803,9 +809,30 @@ export function ProfileView({
 
       {/* Repos */}
       <div style={{ marginTop: "40px" }}>
-        <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--color-ink)", margin: "0 0 20px 0", letterSpacing: "-0.2px" }}>
+        <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--color-ink)", margin: "0 0 12px 0", letterSpacing: "-0.2px" }}>
           Popular repositories
         </h2>
+        <div style={{ marginBottom: "16px" }}>
+          <input
+            ref={searchRef}
+            type="text"
+            aria-label="Filter repositories by name or description"
+            placeholder="Filter repositories... (press / to focus)"
+            value={repoFilter}
+            onChange={(e) => setRepoFilter(e.target.value)}
+            style={{
+              width: "100%",
+              maxWidth: "320px",
+              padding: "8px 12px",
+              fontSize: "13px",
+              border: "1px solid var(--color-hairline)",
+              borderRadius: "6px",
+              backgroundColor: "var(--color-canvas)",
+              color: "var(--color-ink)",
+              outline: "none",
+            }}
+          />
+        </div>
 
         {repos.length === 0 ? (
           <p style={{ fontSize: "13px", color: "var(--color-ink-mute)", margin: 0 }}>
@@ -814,7 +841,7 @@ export function ProfileView({
         ) : (
           <>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
-            {repos.map((repo) => (
+            {repos.filter((repo) => !repoFilter || repo.name.toLowerCase().includes(repoFilter.toLowerCase()) || (repo.description || "").toLowerCase().includes(repoFilter.toLowerCase())).map((repo) => (
               <a
                 key={repo.id}
                 href={repo.html_url}
