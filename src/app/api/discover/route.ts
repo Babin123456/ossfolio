@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
   const query = (searchParams.get("q") || "").trim().slice(0, 100);
   const lang = (searchParams.get("lang") || "").trim();
-  const minScore = Math.max(0, parseInt(searchParams.get("min_score") || "0", 10) || 0);
+  const minScore = Math.min(2147483647, Math.max(0, parseInt(searchParams.get("min_score") || "0", 10) || 0));
   const sortBy = VALID_SORT.includes(searchParams.get("sort") as typeof VALID_SORT[number])
     ? searchParams.get("sort")!
     : "score";
