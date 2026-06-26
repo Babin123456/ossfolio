@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
+import type { MergedPR } from '@/types';
+import { LatestMergedPRs } from '@/components/profile/LatestMergedPRs';
 import Link from "next/link";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { HeatmapWithYearNav } from "@/components/profile/HeatmapWithYearNav";
@@ -81,6 +83,8 @@ interface ProfileExtras {
   updatedAt: string | null;
   badges: BadgeItem[];
   profileId: string | null;
+  rateLimited?: boolean;
+  mergedPRs: MergedPR[];
 }
 
 /** Format an ISO timestamp as a human-readable relative string for the profile header. */
@@ -111,6 +115,7 @@ export function ProfileView({
   badges = [],
   profileId,
   rateLimited,
+  mergedPRs,
 }: { user: GitHubUser; repos: GitHubRepo[] } & ProfileExtras & { rateLimited?: boolean }) {
   const [copied, setCopied] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -734,9 +739,7 @@ export function ProfileView({
             )}
           </div>
           {badgesList.length === 0 ? (
-            <p style={{ fontSize: "13px", color: "var(--color-ink-mute)", margin: 0 }}>
-              No badges claimed yet. Click &quot;Add badge&quot; to show your participation.
-            </p>
+            <p style={{ fontSize: "13px", color: "var(--color-ink-mute)", margin: 0 }}>No badges claimed yet. Click "Add badge" to show your participation.</p>
           ) : (
             <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
               {badgesList.map((badge) => {
@@ -776,28 +779,32 @@ export function ProfileView({
                       {badge.years.join(", ")}
                     </span>
                     {isOwner && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveBadge(badge.program)}
-                        title={`Remove ${badge.program} badge`}
-                        aria-label={`Remove ${badge.program} badge`}
-                        style={{
-                          background: "none",
-                          border: "none",
-                          color: "rgba(255, 255, 255, 0.8)",
-                          cursor: "pointer",
-                          padding: 0,
-                          display: "flex",
-                          alignItems: "center",
-                          fontSize: "16px",
-                          marginLeft: "4px",
-                          lineHeight: 1,
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.color = "#ffffff")}
-                        onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255, 255, 255, 0.8)")}
-                      >
-                        &times;
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveBadge(badge.program)}
+                          title={`Remove ${badge.program} badge`}
+                          aria-label={`Remove ${badge.program} badge`}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "rgba(255, 255, 255, 0.8)",
+                            cursor: "pointer",
+                            padding: 0,
+                            display: "flex",
+                            alignItems: "center",
+                            fontSize: "16px",
+                            marginLeft: "4px",
+                            lineHeight: 1,
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.color = "#ffffff")}
+                          onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255, 255, 255, 0.8)")}
+                        >
+                          &times;
+                        </button>
+                        {/* Latest Merged PRs */}
+                        <LatestMergedPRs mergedPRs={mergedPRs} />
+                      </>
                     )}
                   </div>
                 );
