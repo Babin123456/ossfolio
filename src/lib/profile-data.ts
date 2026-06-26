@@ -1,4 +1,4 @@
-import type { ContributorStats, Org, Repo, TechEntry } from "@/types";
+import type { ContributorStats, Org, Repo, TechEntry, MergedPR } from "@/types";
 import { LANG_COLORS } from "@/lib/languages";
 
 /**
