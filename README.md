@@ -228,6 +228,9 @@ Everyone who has helped build OSSfolio — code, design, docs, ideas, all of it.
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/abhilasha2101"><img src="https://avatars.githubusercontent.com/u/144041389?v=4?s=100" width="100px;" alt="Abhilasha Kumari"/><br /><sub><b>Abhilasha Kumari</b></sub></a><br /><a href="https://github.com/PRODHOSH/ossfolio/commits?author=abhilasha2101" title="Code">💻</a> <a href="#design-abhilasha2101" title="Design">🎨</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://parthwebde12.github.io/Portfoliosite-master/"><img src="https://avatars.githubusercontent.com/u/163313000?v=4?s=100" width="100px;" alt="Parth Wakodikar"/><br /><sub><b>Parth Wakodikar</b></sub></a><br /><a href="https://github.com/PRODHOSH/ossfolio/commits?author=Parthwebde12" title="Code">💻</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Babin123456"><img src="https://avatars.githubusercontent.com/u/265290994?v=4?s=100" width="100px;" alt="Babin Bid"/><br /><sub><b>Babin Bid</b></sub></a><br /><a href="https://github.com/PRODHOSH/ossfolio/commits?author=Babin123456" title="Code">💻</a> <a href="#design-Babin123456" title="Design">🎨</a></td>
+    </tr>
   </tbody>
 </table>
 

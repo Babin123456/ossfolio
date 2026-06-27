@@ -150,6 +150,16 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "Babin123456",
+      "name": "Babin Bid",
+      "avatar_url": "https://avatars.githubusercontent.com/u/265290994?v=4",
+      "profile": "https://github.com/Babin123456",
+      "contributions": [
+        "code",
+        "design"
+      ]
     }
   ],
   "contributionTypes": [
