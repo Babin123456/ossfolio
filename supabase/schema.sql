@@ -23,6 +23,10 @@ create table public.profiles (
   total_issues   integer not null default 0,
   total_reviews  integer not null default 0,
   badges         jsonb not null default '[]'::jsonb,
+  headline       text,
+  pinned_repos   text[] not null default '{}',
+  custom_links   jsonb not null default '[]'::jsonb,
+  visibility     text not null default 'public' check (visibility in ('public', 'unlisted')),
   search_text    tsvector generated always as (
     to_tsvector('english',
       coalesce(username, '') || ' ' ||
