@@ -79,7 +79,33 @@ export default function RootLayout({
         />
       </head>
 
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <a
+          href="#main-content"
+          style={{
+            position: "absolute",
+            left: "-9999px",
+            top: 0,
+            zIndex: 9999,
+            padding: "12px 20px",
+            backgroundColor: "#3ecf8e",
+            color: "#171717",
+            fontSize: "14px",
+            fontWeight: 600,
+            textDecoration: "none",
+            borderRadius: "0 0 8px 0",
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.left = "0";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.left = "-9999px";
+          }}
+        >
+          Skip to main content
+        </a>
+        {children}
+      </body>
     </html>
   );
 }
