@@ -43,11 +43,11 @@ export function ProfileCard({
         display: "flex",
         flexDirection: "column",
         padding: "20px",
-        border: "1px solid #ededed",
+        border: "1px solid var(--color-hairline)",
         borderRadius: "12px",
         textDecoration: "none",
-        backgroundColor: "#ffffff",
-        transition: "border-color 0.15s",
+        backgroundColor: "var(--color-canvas)",
+        transition: "border-color 0.15s, background-color 0.2s",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
@@ -56,14 +56,14 @@ export function ProfileCard({
           alt={`${displayName} avatar`}
           width={44}
           height={44}
-          style={{ borderRadius: "9999px", border: "1px solid #ededed", flexShrink: 0 }}
+          style={{ borderRadius: "9999px", border: "1px solid var(--color-hairline)", flexShrink: 0 }}
         />
         <div style={{ minWidth: 0, flex: 1 }}>
           <p
             style={{
               fontSize: "15px",
               fontWeight: 600,
-              color: "#171717",
+              color: "var(--color-ink)",
               margin: 0,
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -75,7 +75,7 @@ export function ProfileCard({
           <p
             style={{
               fontSize: "13px",
-              color: "#9a9a9a",
+              color: "var(--color-ink-mute-2)",
               margin: "2px 0 0 0",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -86,10 +86,10 @@ export function ProfileCard({
           </p>
         </div>
         <div style={{ textAlign: "right", flexShrink: 0 }}>
-          <p style={{ fontSize: "20px", fontWeight: 600, color: "#171717", margin: 0, lineHeight: 1 }}>
+          <p style={{ fontSize: "20px", fontWeight: 600, color: "var(--color-ink)", margin: 0, lineHeight: 1 }}>
             {score}
           </p>
-          <p style={{ fontSize: "11px", color: "#9a9a9a", margin: "2px 0 0 0" }}>score</p>
+          <p style={{ fontSize: "11px", color: "var(--color-ink-mute-2)", margin: "2px 0 0 0" }}>score</p>
         </div>
       </div>
 
@@ -97,7 +97,7 @@ export function ProfileCard({
         <p
           style={{
             fontSize: "13px",
-            color: "#707070",
+            color: "var(--color-ink-mute)",
             margin: "0 0 12px 0",
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -118,8 +118,8 @@ export function ProfileCard({
               style={{
                 fontSize: "11px",
                 fontWeight: 500,
-                color: "#4a4a4a",
-                backgroundColor: "#fafafa",
+                color: "var(--color-ink-mute)",
+                backgroundColor: "var(--color-canvas-soft)",
                 borderRadius: "4px",
                 padding: "2px 8px",
               }}
@@ -130,7 +130,7 @@ export function ProfileCard({
         </div>
       )}
 
-      <div style={{ display: "flex", gap: "16px", fontSize: "12px", color: "#9a9a9a" }}>
+      <div style={{ display: "flex", gap: "16px", fontSize: "12px", color: "var(--color-ink-mute-2)" }}>
         <span>{totalPrs} PRs</span>
         <span>{totalCommits} commits</span>
         <span>{totalIssues} issues</span>

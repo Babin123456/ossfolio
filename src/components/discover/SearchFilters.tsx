@@ -66,20 +66,20 @@ export function SearchFilters() {
     width: "100%",
     fontSize: "15px",
     padding: "12px 16px",
-    border: "1px solid #ededed",
+    border: "1px solid var(--color-hairline)",
     borderRadius: "6px",
     outline: "none",
-    backgroundColor: "#fafafa",
-    color: "#171717",
+    backgroundColor: "var(--color-canvas-soft)",
+    color: "var(--color-ink)",
   };
 
   const selectStyle: React.CSSProperties = {
     fontSize: "14px",
     padding: "8px 12px",
-    border: "1px solid #ededed",
+    border: "1px solid var(--color-hairline)",
     borderRadius: "6px",
-    backgroundColor: "#ffffff",
-    color: "#171717",
+    backgroundColor: "var(--color-canvas)",
+    color: "var(--color-ink)",
     cursor: "pointer",
   };
 
@@ -152,7 +152,7 @@ export function SearchFilters() {
             style={{
               fontSize: "13px",
               fontWeight: 500,
-              color: "#707070",
+              color: "var(--color-ink-mute)",
               background: "none",
               border: "none",
               cursor: "pointer",
