@@ -41,3 +41,35 @@ AI:
       - any-glob-to-any-file:
           - 'src/lib/ai/**'
           - 'src/app/api/ai/**'
+
+security:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/workflows/codeql.yml'
+          - '.github/workflows/dependency-review.yml'
+          - '.github/workflows/secret-scanning.yml'
+          - 'src/lib/api-validation.ts'
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'package.json'
+          - 'package-lock.json'
+          - '.github/dependabot.yml'
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/workflows/**'
+          - '.github/labeler.yml'
+
+config:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'next.config.*'
+          - 'tsconfig.*'
+          - 'tailwind.config.*'
+          - 'postcss.config.*'
+          - '.env.example'
+          - '.prettierrc*'
+          - '.eslintrc*'
