@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { ScoreCalculator } from "@/components/home/ScoreCalculator";
 
 export const metadata: Metadata = {
   title: "How Your Score Is Calculated - OSSfolio",
@@ -28,40 +29,40 @@ export default function ScoreExplainedPage() {
   const sectionTitleStyle = {
     fontSize: "18px",
     fontWeight: 500,
-    color: "#171717",
+    color: "var(--color-ink)",
     margin: "0 0 8px 0",
   };
   const paragraphStyle = {
     fontSize: "15px",
     lineHeight: 1.55,
-    color: "#707070",
+    color: "var(--color-ink-mute)",
     margin: "0 0 12px 0",
   };
   const cellBase = {
     padding: "12px 16px",
-    borderBottom: "1px solid #ededed",
+    borderBottom: "1px solid var(--color-hairline)",
     textAlign: "left" as const,
   };
 
   return (
     <>
       <Navbar />
-      <main style={{ backgroundColor: "#ffffff", minHeight: "100vh" }}>
+      <main style={{ backgroundColor: "var(--color-canvas)", color: "var(--color-ink)", minHeight: "100vh", transition: "background-color 0.2s ease, color 0.2s ease" }}>
         <div style={{ maxWidth: "44rem", margin: "0 auto", padding: "56px 20px" }}>
           {/* Header */}
           <header style={{ marginBottom: "32px" }}>
             <h1
               style={{
                 fontSize: "28px",
-                fontWeight: 500,
-                color: "#171717",
+                fontWeight: 600,
+                color: "var(--color-ink)",
                 letterSpacing: "-0.42px",
                 margin: 0,
               }}
             >
               How your score is calculated
             </h1>
-            <p style={{ fontSize: "15px", color: "#707070", margin: "8px 0 0 0", lineHeight: 1.55 }}>
+            <p style={{ fontSize: "15px", color: "var(--color-ink-mute)", margin: "8px 0 0 0", lineHeight: 1.55 }}>
               Your contributor score is a single number that sums up your open-source
               activity. It is built from public GitHub data using the simple, fixed
               formula below - no hidden weighting, no manual adjustments.
@@ -77,9 +78,10 @@ export default function ScoreExplainedPage() {
             </p>
             <div
               style={{
-                border: "1px solid #ededed",
+                border: "1px solid var(--color-hairline)",
                 borderRadius: "12px",
                 overflow: "hidden",
+                backgroundColor: "var(--color-canvas-soft)"
               }}
             >
               <table
@@ -91,13 +93,13 @@ export default function ScoreExplainedPage() {
               >
                 <thead>
                   <tr>
-                    <th style={{ ...cellBase, color: "#9a9a9a", fontWeight: 500 }}>
+                    <th style={{ ...cellBase, color: "var(--color-ink-mute-2)", fontWeight: 500 }}>
                       Activity
                     </th>
                     <th
                       style={{
                         ...cellBase,
-                        color: "#9a9a9a",
+                        color: "var(--color-ink-mute-2)",
                         fontWeight: 500,
                         width: "90px",
                         whiteSpace: "nowrap",
@@ -108,7 +110,7 @@ export default function ScoreExplainedPage() {
                     <th
                       style={{
                         ...cellBase,
-                        color: "#9a9a9a",
+                        color: "var(--color-ink-mute-2)",
                         fontWeight: 500,
                       }}
                     >
@@ -124,30 +126,33 @@ export default function ScoreExplainedPage() {
                       : cellBase;
                     return (
                       <tr key={row.activity}>
-                        <td style={{ ...rowCell, color: "#171717", fontWeight: 500 }}>
+                        <td style={{ ...rowCell, color: "var(--color-ink)", fontWeight: 500 }}>
                           {row.activity}
                         </td>
                         <td
                           style={{
                             ...rowCell,
-                            color: "#24b47e",
+                            color: "var(--color-primary)",
                             fontWeight: 600,
                             whiteSpace: "nowrap",
                           }}
                         >
                           {row.points}
                         </td>
-                        <td style={{ ...rowCell, color: "#707070" }}>{row.note}</td>
+                        <td style={{ ...rowCell, color: "var(--color-ink-mute)" }}>{row.note}</td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
             </div>
-            <p style={{ fontSize: "13px", color: "#9a9a9a", margin: "12px 0 0 0" }}>
+            <p style={{ fontSize: "13px", color: "var(--color-ink-mute-2)", margin: "12px 0 0 0" }}>
               Example: 40 commits, 10 PRs, 6 issues, 4 reviews, and 300 stars works out
               to 40 + 30 + 12 + 8 + 30 = 120 points.
             </p>
+
+            {/* Score Simulator Component */}
+            <ScoreCalculator />
           </section>
 
           {/* What it measures */}
@@ -191,7 +196,7 @@ export default function ScoreExplainedPage() {
           <p style={{ margin: 0 }}>
             <Link
               href="/explore"
-              style={{ fontSize: "14px", fontWeight: 500, color: "#171717" }}
+              style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-ink)", textDecoration: "underline" }}
             >
               View the leaderboard
             </Link>
@@ -202,3 +207,4 @@ export default function ScoreExplainedPage() {
     </>
   );
 }
+
