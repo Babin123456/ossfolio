@@ -64,3 +64,23 @@
 - name: "invalid"
   color: "e4e669"
   description: "This doesn't seem right"
+
+- name: "stale"
+  color: "f9d0c4"
+  description: "No recent activity — will be closed if not updated"
+
+- name: "pinned"
+  color: "3b82f6"
+  description: "Important issue — never auto-close"
+
+- name: "dependencies"
+  color: "bfdad0"
+  description: "Dependency updates via Dependabot"
+
+- name: "security"
+  color: "d93f0b"
+  description: "Security-related issue that needs attention"
+
+- name: "chore"
+  color: "cfd3d7"
+  description: "Tooling, CI, and configuration changes"

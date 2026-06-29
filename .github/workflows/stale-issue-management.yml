@@ -1,0 +1,47 @@
+name: Stale Issue Management
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+          stale-issue-message: |
+            This issue has been marked as stale because it has been inactive for 21 days.
+            If there are no further updates in the next 7 days, this issue will be automatically closed.
+            Please add a comment if this is still relevant.
+          stale-pr-message: |
+            This pull request has been marked as stale due to inactivity.
+            If there are no updates in the next 7 days, it will be automatically closed.
+
+          close-issue-message: |
+            This issue has been automatically closed due to prolonged inactivity.
+            Feel free to reopen it if the topic is still relevant.
+          close-pr-message: |
+            This pull request has been automatically closed due to inactivity.
+
+          days-before-stale: 21
+          days-before-close: 7
+          days-before-pr-stale: 30
+          days-before-pr-close: 14
+
+          stale-issue-label: stale
+          stale-pr-label: stale
+
+          exempt-issue-labels: "pinned,security,enhancement,bug"
+          exempt-pr-labels: "pinned,security,dependencies"
+
+          exempt-all-milestones: true
+          exempt-draft-pr: true
+
+          operations-per-run: 100
+          remove-stale-when-updated: true
