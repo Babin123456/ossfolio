@@ -391,10 +391,6 @@ export function ProfileView({
   );
 
   useEffect(() => {
-    setBadgesList(sanitizeBadges(badges));
-  }, [badges]);
-
-  useEffect(() => {
     const onScroll = () => setShowBackToTop(window.scrollY > 400);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
