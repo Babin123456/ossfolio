@@ -1,12 +1,12 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 
 export function useMounted(): boolean {
-  const mounted = useRef(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    mounted.current = true;
-    return () => { mounted.current = false; };
+    setMounted(true);
+    return () => setMounted(false);
   }, []);
 
-  return mounted.current;
+  return mounted;
 }
