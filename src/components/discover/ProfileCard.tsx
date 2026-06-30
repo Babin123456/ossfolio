@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -16,7 +17,7 @@ interface ProfileCardProps {
   topLanguages: string[];
 }
 
-export function ProfileCard({
+function ProfileCardInner({
   username,
   name,
   avatarUrl,
@@ -139,3 +140,5 @@ export function ProfileCard({
     </Link>
   );
 }
+
+export const ProfileCard = memo(ProfileCardInner);
